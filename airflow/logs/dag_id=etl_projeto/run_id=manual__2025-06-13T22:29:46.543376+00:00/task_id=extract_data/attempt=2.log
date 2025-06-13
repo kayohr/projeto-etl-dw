@@ -1,0 +1,34 @@
+[2025-06-13T22:30:58.949+0000] {taskinstance.py:1956} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: etl_projeto.extract_data manual__2025-06-13T22:29:46.543376+00:00 [queued]>
+[2025-06-13T22:30:58.966+0000] {taskinstance.py:1956} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: etl_projeto.extract_data manual__2025-06-13T22:29:46.543376+00:00 [queued]>
+[2025-06-13T22:30:58.966+0000] {taskinstance.py:2170} INFO - Starting attempt 2 of 2
+[2025-06-13T22:30:58.989+0000] {taskinstance.py:2191} INFO - Executing <Task(PythonOperator): extract_data> on 2025-06-13 22:29:46.543376+00:00
+[2025-06-13T22:30:58.994+0000] {standard_task_runner.py:60} INFO - Started process 82 to run task
+[2025-06-13T22:30:58.997+0000] {standard_task_runner.py:87} INFO - Running: ['airflow', 'tasks', 'run', 'etl_projeto', 'extract_data', 'manual__2025-06-13T22:29:46.543376+00:00', '--job-id', '14', '--raw', '--subdir', 'DAGS_FOLDER/etl_pipeline.py', '--cfg-path', '/tmp/tmp6uqxg0r3']
+[2025-06-13T22:30:59.000+0000] {standard_task_runner.py:88} INFO - Job 14: Subtask extract_data
+[2025-06-13T22:30:59.105+0000] {task_command.py:423} INFO - Running <TaskInstance: etl_projeto.extract_data manual__2025-06-13T22:29:46.543376+00:00 [running]> on host d0c9680c0bed
+[2025-06-13T22:30:59.295+0000] {taskinstance.py:2480} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='kayo' AIRFLOW_CTX_DAG_ID='etl_projeto' AIRFLOW_CTX_TASK_ID='extract_data' AIRFLOW_CTX_EXECUTION_DATE='2025-06-13T22:29:46.543376+00:00' AIRFLOW_CTX_TRY_NUMBER='2' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-06-13T22:29:46.543376+00:00'
+[2025-06-13T22:31:02.042+0000] {taskinstance.py:2698} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.8/site-packages/airflow/models/taskinstance.py", line 433, in _execute_task
+    result = execute_callable(context=context, **execute_callable_kwargs)
+  File "/home/airflow/.local/lib/python3.8/site-packages/airflow/operators/python.py", line 199, in execute
+    return_value = self.execute_callable()
+  File "/home/airflow/.local/lib/python3.8/site-packages/airflow/operators/python.py", line 216, in execute_callable
+    return self.python_callable(*self.op_args, **self.op_kwargs)
+  File "/opt/airflow/dags/../src/extract/extract_api.py", line 46, in extract_data
+    df.to_csv('data/dados_api.csv', index=False, encoding='utf-8')
+  File "/home/airflow/.local/lib/python3.8/site-packages/pandas/core/generic.py", line 3772, in to_csv
+    return DataFrameRenderer(formatter).to_csv(
+  File "/home/airflow/.local/lib/python3.8/site-packages/pandas/io/formats/format.py", line 1186, in to_csv
+    csv_formatter.save()
+  File "/home/airflow/.local/lib/python3.8/site-packages/pandas/io/formats/csvs.py", line 240, in save
+    with get_handle(
+  File "/home/airflow/.local/lib/python3.8/site-packages/pandas/io/common.py", line 737, in get_handle
+    check_parent_directory(str(handle))
+  File "/home/airflow/.local/lib/python3.8/site-packages/pandas/io/common.py", line 600, in check_parent_directory
+    raise OSError(rf"Cannot save file into a non-existent directory: '{parent}'")
+OSError: Cannot save file into a non-existent directory: 'data'
+[2025-06-13T22:31:02.075+0000] {taskinstance.py:1138} INFO - Marking task as FAILED. dag_id=etl_projeto, task_id=extract_data, execution_date=20250613T222946, start_date=20250613T223058, end_date=20250613T223102
+[2025-06-13T22:31:02.099+0000] {standard_task_runner.py:107} ERROR - Failed to execute job 14 for task extract_data (Cannot save file into a non-existent directory: 'data'; 82)
+[2025-06-13T22:31:02.108+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 1
+[2025-06-13T22:31:02.155+0000] {taskinstance.py:3280} INFO - 0 downstream tasks scheduled from follow-on schedule check

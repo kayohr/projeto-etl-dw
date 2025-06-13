@@ -1,0 +1,18 @@
+# Ignorar dados de runtime do Airflow
+airflow/logs/
+airflow/data/
+
+# Ignorar volume do Postgres
+postgres_data/
+
+# Ignorar cache Python
+__pycache__/
+*.pyc
+
+# Ignorar ambiente virtual (se houver)
+venv/
+.env
+
+# Ignorar logs gerados
+*.log
+*.tmp

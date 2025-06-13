@@ -1,0 +1,22 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: sua_senha
+      POSTGRES_DB: etl_projeto
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+     
+      - ./data:/data
+    networks:
+      - airflow-network
+
+networks:
+  airflow-network:
+    external: true
