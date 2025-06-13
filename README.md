@@ -28,30 +28,31 @@ pip install -r requirements.txt
 ````
 
 ## Organização do Projeto
-### Primeira Estrutura do Projeto (sem Airflow ainda)
+### Primeira Estrutura do Projeto (sem Airflow)
 ````
 etl_projeto/
 │
-├── README.md
-├── requirements.txt
+├── README.md                 --> Documentação do projeto
+├── requirements.txt          --> Dependências Python
 │
-├── data/                        # Área de armazenamento temporário
-│   ├── dados_api.csv            # Dados extraídos brutos diretamente da API 
-│   ├── dados_api_tratado.csv    # Dados tratados (limpeza, conversão de tipos) 
-│   ├── dim_cliente.csv          # Dados da dimensão cliente (normalizados) 
-│   ├── dim_produto.csv          # Dados da dimensão produto (normalizados)
-│   └── fato_pedido.csv          # Dados da tabela fato (modelo  dimensional)
-├── src/
+├── sql/                      --> Scripts de criação de tabelas DW
+│   └── create_dw.sql         --> Contém o DDL para criar as tabelas (dimensões e fato)
+│
+├── src/                      --> Código dividido por etapas do ETL
 │   ├── config/
-│   │   └── config.py
+│   │   └── config.py         --> Arquivo de configuração (API URL, token, banco)
+│   │
 │   ├── extract/
-│   │   └── extract_api.py
+│   │   └── extract_api.py    --> Código de extração da API e geração do CSV bruto
+│   │
 │   ├── transform/
-│   │   └── transform_data.py
+│   │   └── transform_data.py --> Código de transformação e limpeza de dados
+│   │
 │   └── load/
-│       └── load_dw.py
+│       └── load_dw.py        --> Código de carga no DW Postgres (usa create_dw.sql)
 │
-└── main.py
+└── main.py                   --> Orquestrador manual do ETL (chama extract → transform → load)
+
 ````
 </BR>
 
@@ -76,9 +77,13 @@ etl_projeto/
 
 ## Modelagem e Armazenamento
 ### Modelo dimensional: Esquema Estrela
-- create_dw.sql: responsável por modelar o DW com as tabelas fato e dimensões.
-- load_dw.sql: responsável por carregar os arquivos CSV transformados gerados no ETL para dentro do DW.</br></br>
+</br>
+As tabelas seguem um esquema estrela clássico, com:</br>
+1 create_dw.sql	Responsável por criar as tabelas no Data Warehouse (modelo físico)</br>
+2 load_dw.py	Responsável por realizar a carga dos dados transformados (CSVs) para dentro do DW
+</br></br>
 Tabelas criadas:
+
 ````
 Tabela dim_cliente
 Campo	Tipo
@@ -118,23 +123,38 @@ review_answer_timestamp	TIMESTAMP
 
 
 ````
-Todas as tabelas são carregadas com base nos CSVs gerados no processo de transformação.
+
+### Fluxo de carga de dados</br>
+As tabelas são alimentadas com base nos arquivos CSV gerados na etapa de transformação (dados_api_tratado.csv).
+
+O arquivo load_dw.py realiza:
+- Truncamento das tabelas (para evitar duplicatas)
+- Inserção dos dados transformados nas tabelas de dimensão e fato.
 </br></br>
 ### Orquestrador ETL: main.py</br>
-O arquivo main.py é responsável por orquestrar todo o pipeline ETL de forma sequencial, em ambiente local, sem a necessidade do Airflow (modo manual de execução).
-</br> Responsabilidade do main.py:
-- Executa o extract_api.py → coleta os dados via API paginada.
+Extração:
+- Executa o extract_api.py
+- Coleta os dados via API paginada.
+- Salva os dados brutos em arquivos CSV no diretório data/.
 
-- Executa o transform_data.py → realiza a limpeza e a geração dos CSVs já modelados.
+Transformação:
+- Executa o transform_data.py
+- Realiza a limpeza, normalização e padronização dos dados.
+- Gera os arquivos CSV transformados prontos para carga (dados_api_tratado.csv).
 
-* Executa o load_dw.py → carrega os arquivos CSV diretamente no PostgreSQL via SQL COPY.
+Carga:
+- Executa o load_dw.py
+- Realiza a carga dos dados transformados no banco de dados PostgreSQL.
+- Insere os registros nas tabelas de fato e dimensões previamente criadas.
 
-* Permite executar o pipeline inteiro com um único comando:
+ Execução simplificada:
+- Permite executar o pipeline completo com um único comando localmente:
+
 
 ## Como Rodar o PostgreSQL
 Após subir o Docker:
 ````
-docker-compose up -d
+docker-compose -f docker-compose-postgres.yml up -d
 ````
 Acessar o PostgreSQL via terminal:
 ````
@@ -151,19 +171,28 @@ Agora com a inclusão do Airflow para automação do ETL:
 ````
 etl_projeto/
 │
-├── data/
-├── sql/
-├── src/
-├── postgres_data/
-│
 ├── airflow/
 │   ├── dags/
-│   │   └── etl_pipeline.py
-│   ├── logs/
-│   ├── plugins/
-│   └── docker-compose.yml
+│   │   ├── etl_pipeline.py    --> DAG principal (Extract → Transform → Load)
+│   │   └── provision_dw.py    --> DAG de criação de schema (executa o SQL ou equivalente via Python)
+│   │
+│   ├── logs/                  --> Logs gerados pelo Airflow (não versionados)
+│   └── data/                  --> Onde o extract salva os CSVs (data/dados_api.csv, etc)
 │
-└── docker-compose.yml
+├── sql/
+│   └── create_dw.sql          --> DDL usado na DAG provision_dw ou executado manualmente
+│
+├── src/
+│   ├── config/
+│   ├── extract/
+│   ├── transform/
+│   └── load/
+│
+├── docker-compose.yml         --> Infraestrutura completa Airflow + Postgres
+├── requirements.txt
+├── README.md
+└── .gitignore
+
 ````
 Orquestração via Airflow
 DAG etl_pipeline.py
@@ -199,11 +228,27 @@ networks:
 Após isso fazer novamente o ````docker-compose -f docker-compose-postgres.yml up -d```` e ````docker-compose -f docker-compose-airflow.yml up -d````.
 ## Diagrama Resumido da Arquitetura
 ````
-API -> extract_api.py -> dados_api.csv
-         ↓
-   transform_data.py -> dim_cliente.csv / dim_produto.csv / fato_pedido.csv
-         ↓
-   load_dw.py + SQL COPY -> PostgreSQL (DW)
-         ↓
-  Airflow controla tudo via DAG
+Airflow (DAG etl_pipeline.py)
+   │
+   ├── Task 1: Extract --> src/extract/extract_api.py --> Gera data/dados_api.csv
+   │
+   ├── Task 2: Transform --> src/transform/transform_data.py --> Gera data/dados_api_tratado.csv
+   │
+   └── Task 3: Load --> src/load/load_dw.py --> Carga final no Postgres DW
+
+
+  ````
+
+## Visão Geral do Projeto Airflow ETL
+````
+[API Externa]  -->  [Extract (src/extract)]  -->  [Transform (src/transform)]  -->  [Load (src/load)]  -->  [Postgres DW]
+
+                        |
+                        |
+                    [Airflow]
+                        |
+       ----------------|----------------
+      |                |               |
+  [DAGs]         [Logs / Runtime]   [Plugins]
+
   ````
