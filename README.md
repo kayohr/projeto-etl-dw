@@ -84,7 +84,8 @@ As tabelas seguem um esquema estrela clássico, com:</br>
 </br></br>
 Tabelas criadas:
 
-![image](https://github.com/user-attachments/assets/71ca4890-3182-4b81-a93b-0cdeceb2498b)
+![image](https://github.com/user-attachments/assets/1c2a81c7-3322-4d64-9f88-e8b8336fbed2)
+
 
 
 ### Fluxo de carga de dados</br>
