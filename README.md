@@ -84,45 +84,8 @@ As tabelas seguem um esquema estrela clássico, com:</br>
 </br></br>
 Tabelas criadas:
 
-````
-Tabela dim_cliente
-Campo	Tipo
-customer_id	VARCHAR(255) PK
-customer_city	VARCHAR(255)
-customer_state	VARCHAR(255)
-customer_zip_code_prefix	VARCHAR(10)
+![image](https://github.com/user-attachments/assets/71ca4890-3182-4b81-a93b-0cdeceb2498b)
 
-Tabela dim_produto
-Campo	Tipo
-product_id	VARCHAR(255) PK
-product_category_name	VARCHAR(255)
-product_photos_qty	INTEGER
-product_weight_g	NUMERIC(10,2)
-product_length_cm	NUMERIC(10,2)
-product_height_cm	NUMERIC(10,2)
-product_width_cm	NUMERIC(10,2)
-
-Tabela fato_pedido
-Campo	Tipo	                        Observação
-order_id	VARCHAR(255)	            PK (chave primária)
-customer_id	VARCHAR(255)	            FK → dim_cliente(customer_id)
-product_id	VARCHAR(255)	            FK → dim_produto(product_id)
-order_status	VARCHAR(50)	
-order_purchase_timestamp	TIMESTAMP	
-order_approved_at	TIMESTAMP	
-order_delivered_carrier_date	TIMESTAMP	
-order_delivered_customer_date	TIMESTAMP	
-order_estimated_delivery_date	TIMESTAMP	
-price	NUMERIC(10,2)	
-freight_value	NUMERIC(10,2)	
-review_score	INTEGER	
-review_comment_title	TEXT	
-review_comment_message	TEXT	
-review_creation_date	DATE	
-review_answer_timestamp	TIMESTAMP	
-
-
-````
 
 ### Fluxo de carga de dados</br>
 As tabelas são alimentadas com base nos arquivos CSV gerados na etapa de transformação (dados_api_tratado.csv).
